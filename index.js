@@ -17,8 +17,7 @@ async function startParseServer() {
     appId: process.env.APP_ID,
     masterKey: process.env.MASTER_KEY,
     encodeParseObjectInCloudFunction: false,
-    masterKeyIps: [],
-    trustProxy: true,
+    masterKeyIps: ['::ffff:103.251.227.112'],
   });
 
   // Start Parse Server
