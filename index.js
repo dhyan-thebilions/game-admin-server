@@ -6,7 +6,11 @@ require("dotenv").config();
 const app = express();
 
 // Add CORS middleware
-app.use("*", cors());
+app.use(cors({
+  origin: 'https://master.d1ia27u0hflr52.amplifyapp.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'X-Parse-Application-Id', 'X-Parse-REST-API-Key', 'X-Parse-Master-Key'],
+}));
 
 // Parse Server initialization
 async function startParseServer() {
