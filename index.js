@@ -51,7 +51,7 @@ async function startParseServer() {
   // Start the server
   const port = 1337;
   app.listen(port, function () {
-    console.log(`##### parse-server running on port ${port} #####`);
+    console.log(`##### parse-server running on ${process.env.SERVER_URL} #####`);
   });
 }
 
