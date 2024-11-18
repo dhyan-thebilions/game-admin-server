@@ -15,7 +15,7 @@ async function startParseServer() {
     cloud: "./cloud/main.js",
     serverURL: process.env.SERVER_URL,
     appId: process.env.APP_ID,
-    masterKey: "5#>fJ@R%5v|$jyDs",
+    masterKey: process.env.MASTER_KEY,
     encodeParseObjectInCloudFunction: false,
     masterKeyIps: [],
     trustProxy: true,
@@ -33,7 +33,7 @@ async function startParseServer() {
       {
         serverURL: process.env.SERVER_URL,
         appId: process.env.APP_ID,
-        masterKey: "5#>fJ@R%5v|$jyDs",
+        masterKey: process.env.MASTER_KEY,
         appName: process.env.APP_NAME,
       },
     ],
