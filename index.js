@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 
 // Add CORS middleware
-app.use(cors());
+app.use("*", cors());
 
 // Parse Server initialization
 async function startParseServer() {
