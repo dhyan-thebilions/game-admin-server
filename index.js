@@ -17,8 +17,9 @@ async function startParseServer() {
     appId: process.env.APP_ID,
     masterKey: process.env.MASTER_KEY,
     encodeParseObjectInCloudFunction: false,
-    masterKeyIps: ['::ffff:103.251.227.112'],
-    cors: ['https://master.d1ia27u0hflr52.amplifyapp.com']
+
+    masterKeyIps: ['::ffff:103.251.227.112', '::ffff:150.129.113.79'],
+    // cors: ['https://master.d1ia27u0hflr52.amplifyapp.com']
   });
 
   // Start Parse Server
@@ -53,7 +54,9 @@ async function startParseServer() {
   // Start the server
   const port = 1337;
   app.listen(port, function () {
-    console.log(`##### parse-server running on ${process.env.SERVER_URL} #####`);
+    console.log(
+      `##### parse-server running on ${process.env.SERVER_URL} #####`
+    );
   });
 }
 

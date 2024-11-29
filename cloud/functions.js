@@ -57,7 +57,7 @@ Parse.Cloud.define("checkUserCredentials", async (request) => {
     }
 });
 
-Parse.Cloud.define("createGameRtpData", async (request) => {
+Parse.Cloud.define("createGameConfigData", async (request) => {
     const { gameName, gameRtp, reelName } = request.params;
 
     // Validate the input
@@ -79,7 +79,7 @@ Parse.Cloud.define("createGameRtpData", async (request) => {
     }
 
     // Create a new GameDetails object
-    const GameDetails = Parse.Object.extend("GameRtp");
+    const GameDetails = Parse.Object.extend("GameConfig");
     const gameDetails = new GameDetails();
 
     // Set the fields for gameName and gameRtp
@@ -147,7 +147,7 @@ Parse.Cloud.define("createGameRtpData", async (request) => {
     }
 });
 
-Parse.Cloud.define("updateGameRtpData", async (request) => {
+Parse.Cloud.define("updateGameConfigData", async (request) => {
     const { objectId, gameName, gameRtp, reelName } = request.params;
 
     // Validate the input
@@ -169,7 +169,7 @@ Parse.Cloud.define("updateGameRtpData", async (request) => {
     }
 
     // Create a new GameDetails object
-    const GameDetails = Parse.Object.extend("GameRtp");
+    const GameDetails = Parse.Object.extend("GameConfig");
     const query = new Parse.Query(GameDetails);
     query.equalTo("objectId", objectId);
 
@@ -225,6 +225,213 @@ Parse.Cloud.define("updateGameRtpData", async (request) => {
         const savedGameDetails = await existingGameDetails.save();
 
         return savedGameDetails;
+    } catch (error) {
+        // Handle different error types
+        if (error instanceof Parse.Error) {
+            // Return the error if it's a Parse-specific error
+            return {
+                status: "error",
+                code: error.code,
+                message: error.message,
+            };
+        } else {
+            // Handle any unexpected errors
+            return {
+                status: "error",
+                code: 500,
+                message: "An unexpected error occurred.",
+            };
+        }
+    }
+});
+
+Parse.Cloud.define("createUser", async (request) => {
+    const { username, name, email, balance, password } = request.params;
+
+    if (!username || !email || !password) {
+        throw new Parse.Error(
+            400,
+            "Missing required fields: username, email, or password"
+        );
+    }
+
+    try {
+        // Create a new Parse User
+        const user = new Parse.User();
+        user.set("username", username);
+        user.set("name", name);
+        user.set("email", email);
+        user.set("balance", balance);
+        user.set("password", password);
+
+        // Save the user
+        await user.signUp(null, { useMasterKey: true });
+
+        return { success: true, message: "User created successfully!" };
+    } catch (error) {
+        // Handle different error types
+        if (error instanceof Parse.Error) {
+            // Return the error if it's a Parse-specific error
+            return {
+                status: "error",
+                code: error.code,
+                message: error.message,
+            };
+        } else {
+            // Handle any unexpected errors
+            return {
+                status: "error",
+                code: 500,
+                message: "An unexpected error occurred.",
+            };
+        }
+    }
+});
+
+Parse.Cloud.define("updateUser", async (request) => {
+    const { userId, username, name, email, balance } = request.params;
+
+    try {
+        // Find the user by ID
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.equalTo("objectId", userId);
+        const user = await userQuery.first({ useMasterKey: true });
+
+        if (!user) {
+            throw new Parse.Error(404, `User with ID ${userId} not found`);
+        }
+
+        // Update the user fields
+        user.set("username", username);
+        user.set("name", name);
+        user.set("email", email);
+        user.set("balance", parseFloat(balance));
+
+        // Save the user
+        await user.save(null, { useMasterKey: true });
+
+        return { success: true, message: "User updated successfully" };
+    } catch (error) {
+        // Handle different error types
+        if (error instanceof Parse.Error) {
+            // Return the error if it's a Parse-specific error
+            return {
+                status: "error",
+                code: error.code,
+                message: error.message,
+            };
+        } else {
+            // Handle any unexpected errors
+            return {
+                status: "error",
+                code: 500,
+                message: "An unexpected error occurred.",
+            };
+        }
+    }
+});
+
+Parse.Cloud.define("deleteUser", async (request) => {
+
+    const { userId } = request.params;
+
+    if (!userId) {
+        throw new Error("User ID is required to delete the user.");
+    }
+
+    try {
+        // Query the user
+        const query = new Parse.Query(Parse.User);
+        query.equalTo("objectId", userId);
+        const user = await query.first({ useMasterKey: true });
+
+        if (!user) {
+            throw new Error("User not found.");
+        }
+
+        // Delete the user
+        await user.destroy({ useMasterKey: true });
+
+        // Fetch remaining users
+        const remainingUsersQuery = new Parse.Query(Parse.User);
+        const remainingUsers = await remainingUsersQuery.find({ useMasterKey: true });
+
+        return {
+            success: true,
+            message: `User with ID ${userId} has been deleted.`,
+            data: remainingUsers.map((user) => ({
+                id: user.id,
+                username: user.get("username"),
+                email: user.get("email"),
+                name: user.get("name"),
+                balance: user.get("balance"),
+            })),
+        };
+    } catch (error) {
+        throw new Error(`Failed to delete user: ${error.message}`);
+    }
+});
+
+
+Parse.Cloud.define("getUserById", async (request) => {
+    const { userId } = request.params;
+
+    if (!userId) {
+        throw new Parse.Error(400, "Missing required parameter: userId");
+    }
+
+    try {
+        const query = new Parse.Query(Parse.User);
+        query.select("username", "email", "name", "balance");
+        query.equalTo("objectId", userId);
+
+        const user = await query.first({ useMasterKey: true });
+
+        if (!user) {
+            throw new Parse.Error(404, `User with ID ${userId} not found`);
+        }
+
+        // Return user data
+        return {
+            id: user.id,
+            username: user.get("username"),
+            email: user.get("email"),
+            name: user.get("name"),
+            balance: user.get("balance"),
+        };
+    } catch (error) {
+        // Handle different error types
+        if (error instanceof Parse.Error) {
+            // Return the error if it's a Parse-specific error
+            return {
+                status: "error",
+                code: error.code,
+                message: error.message,
+            };
+        } else {
+            // Handle any unexpected errors
+            return {
+                status: "error",
+                code: 500,
+                message: "An unexpected error occurred.",
+            };
+        }
+    }
+});
+
+Parse.Cloud.define("fetchAllUsers", async (request) => {
+    try {
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.select("username", "name", "email", "lastLoginIp", "balance");
+        const allUsers = await userQuery.find({ useMasterKey: true });
+        return allUsers.map((user) => ({
+            id: user.id,
+            username: user.get("username"),
+            name: user.get("name"),
+            email: user.get("email"),
+            lastLoginIp: user.get("lastLoginIp"),
+            balance: user.get("balance"),
+        }));
     } catch (error) {
         // Handle different error types
         if (error instanceof Parse.Error) {
