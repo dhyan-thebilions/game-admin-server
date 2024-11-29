@@ -466,7 +466,7 @@ Parse.Cloud.define("fetchGameRtpData", async (request) => {
         }
 
         // Create a query on the 'GameRtp' class
-        const gamertp = Parse.Object.extend("GameRtp");
+        const gamertp = Parse.Object.extend("GameConfig");
         const query = new Parse.Query(gamertp);
         query.equalTo("gameName", gameName);
 
