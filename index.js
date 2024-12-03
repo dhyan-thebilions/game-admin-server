@@ -18,7 +18,7 @@ async function startParseServer() {
     masterKey: process.env.MASTER_KEY,
     encodeParseObjectInCloudFunction: false,
 
-    masterKeyIps: ['::ffff:103.251.227.112', '::ffff:150.129.113.79'],
+    masterKeyIps: ['::ffff:103.251.227.112', '::ffff:150.129.113.79', '::1'],
     // cors: ['https://master.d1ia27u0hflr52.amplifyapp.com']
   });
 
