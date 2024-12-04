@@ -331,6 +331,88 @@ Parse.Cloud.define("updateUser", async (request) => {
     }
 });
 
+Parse.Cloud.define("updateRecharge", async (request) => {
+    const { userId, balance, remark } = request.params;
+
+    try {
+        // Find the user by ID
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.equalTo("objectId", userId);
+        const user = await userQuery.first({ useMasterKey: true });
+
+        if (!user) {
+            throw new Parse.Error(404, `User with ID ${userId} not found`);
+        }
+
+        // Update the user fields
+        user.set("remark", remark);
+        user.set("balance", parseFloat(balance));
+
+        // Save the user
+        await user.save(null, { useMasterKey: true });
+
+        return { success: true, message: "Recharge updated successfully" };
+    } catch (error) {
+        // Handle different error types
+        if (error instanceof Parse.Error) {
+            // Return the error if it's a Parse-specific error
+            return {
+                status: "error",
+                code: error.code,
+                message: error.message,
+            };
+        } else {
+            // Handle any unexpected errors
+            return {
+                status: "error",
+                code: 500,
+                message: "An unexpected error occurred.",
+            };
+        }
+    }
+});
+
+Parse.Cloud.define("updateRedeem", async (request) => {
+    const { userId, balance, remark } = request.params;
+
+    try {
+        // Find the user by ID
+        const userQuery = new Parse.Query(Parse.User);
+        userQuery.equalTo("objectId", userId);
+        const user = await userQuery.first({ useMasterKey: true });
+
+        if (!user) {
+            throw new Parse.Error(404, `User with ID ${userId} not found`);
+        }
+
+        // Update the user fields
+        user.set("remark", remark);
+        user.set("balance", parseFloat(balance));
+
+        // Save the user
+        await user.save(null, { useMasterKey: true });
+
+        return { success: true, message: "Redeem updated successfully" };
+    } catch (error) {
+        // Handle different error types
+        if (error instanceof Parse.Error) {
+            // Return the error if it's a Parse-specific error
+            return {
+                status: "error",
+                code: error.code,
+                message: error.message,
+            };
+        } else {
+            // Handle any unexpected errors
+            return {
+                status: "error",
+                code: 500,
+                message: "An unexpected error occurred.",
+            };
+        }
+    }
+});
+
 Parse.Cloud.define("deleteUser", async (request) => {
 
     const { userId } = request.params;
@@ -371,7 +453,6 @@ Parse.Cloud.define("deleteUser", async (request) => {
         throw new Error(`Failed to delete user: ${error.message}`);
     }
 });
-
 
 Parse.Cloud.define("getUserById", async (request) => {
     const { userId } = request.params;
