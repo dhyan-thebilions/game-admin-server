@@ -331,68 +331,54 @@ Parse.Cloud.define("updateUser", async (request) => {
     }
 });
 
-Parse.Cloud.define("updateRecharge", async (request) => {
-    const { userId, balance, remark } = request.params;
+Parse.Cloud.define("userTransaction", async (request) => {
+    const { id, type, username, balance, transactionAmount, remark } =
+        request.params;
 
     try {
         // Find the user by ID
         const userQuery = new Parse.Query(Parse.User);
-        userQuery.equalTo("objectId", userId);
+        userQuery.equalTo("objectId", id);
         const user = await userQuery.first({ useMasterKey: true });
 
         if (!user) {
-            throw new Parse.Error(404, `User with ID ${userId} not found`);
+            throw new Parse.Error(404, `User with ID ${id} not found`);
         }
 
-        // Update the user fields
-        user.set("remark", remark);
-        user.set("balance", parseFloat(balance));
+        let finalAmount;
+
+        if (type === "redeem") {
+            // Amount deduct form user balance
+            finalAmount = balance - parseFloat(transactionAmount);
+        }
+        if (type === "recharge") {
+            // Amount credit form user balance
+            finalAmount = balance + parseFloat(transactionAmount);
+        }
+
+        // set the user field
+        user.set("balance", finalAmount);
+
+        // set the transaction field
+        const TransactionDetails = Parse.Object.extend("TransactionRecords");
+        const transactionDetails = new TransactionDetails();
+
+        transactionDetails.set("type", type);
+        transactionDetails.set("gameId", "786");
+        transactionDetails.set("username", username);
+        transactionDetails.set("transactionDate", new Date());
+        transactionDetails.set("beforeTransaction", balance);
+        transactionDetails.set("afterTransaction", finalAmount);
+        transactionDetails.set("transactionAmount", parseFloat(transactionAmount));
+        transactionDetails.set("remark", remark);
 
         // Save the user
         await user.save(null, { useMasterKey: true });
 
-        return { success: true, message: "Recharge updated successfully" };
-    } catch (error) {
-        // Handle different error types
-        if (error instanceof Parse.Error) {
-            // Return the error if it's a Parse-specific error
-            return {
-                status: "error",
-                code: error.code,
-                message: error.message,
-            };
-        } else {
-            // Handle any unexpected errors
-            return {
-                status: "error",
-                code: 500,
-                message: "An unexpected error occurred.",
-            };
-        }
-    }
-});
+        // Save the transaction
+        await transactionDetails.save(null, { useMasterKey: true });
 
-Parse.Cloud.define("updateRedeem", async (request) => {
-    const { userId, balance, remark } = request.params;
-
-    try {
-        // Find the user by ID
-        const userQuery = new Parse.Query(Parse.User);
-        userQuery.equalTo("objectId", userId);
-        const user = await userQuery.first({ useMasterKey: true });
-
-        if (!user) {
-            throw new Parse.Error(404, `User with ID ${userId} not found`);
-        }
-
-        // Update the user fields
-        user.set("remark", remark);
-        user.set("balance", parseFloat(balance));
-
-        // Save the user
-        await user.save(null, { useMasterKey: true });
-
-        return { success: true, message: "Redeem updated successfully" };
+        return { success: true, message: "Transaction updated successfully" };
     } catch (error) {
         // Handle different error types
         if (error instanceof Parse.Error) {
@@ -414,7 +400,6 @@ Parse.Cloud.define("updateRedeem", async (request) => {
 });
 
 Parse.Cloud.define("deleteUser", async (request) => {
-
     const { userId } = request.params;
 
     if (!userId) {
@@ -436,7 +421,9 @@ Parse.Cloud.define("deleteUser", async (request) => {
 
         // Fetch remaining users
         const remainingUsersQuery = new Parse.Query(Parse.User);
-        const remainingUsers = await remainingUsersQuery.find({ useMasterKey: true });
+        const remainingUsers = await remainingUsersQuery.find({
+            useMasterKey: true,
+        });
 
         return {
             success: true,
